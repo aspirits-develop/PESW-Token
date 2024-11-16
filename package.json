@@ -5,10 +5,10 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "deploy:local": "npx hardhat run ./scripts/DeployEthTest.js --network localhost",
-    "deploy:sepolia": "npx hardhat run ./scripts/DeployEthTest.js --network sepolia",
+    "deploy:local": "npx hardhat ignition deploy ./ignition/modules/TokenModule.js --network localhost",
+    "deploy:sepolia": "npx hardhat ignition deploy ./ignition/modules/TokenModule.js --network sepolia",
     "verify:sepolia": "npx hardhat ignition verify chain-11155111",
-    "deploy:mainnet": "npx hardhat ignition deploy ./ignition/modules/TokenModule.js --network mainnet"
+    "deploy:mainnet": "npx hardhat ignition deploy ./ignition/modules/TokenModule.js --network mainnet --verify"
   },
   "keywords": [],
   "author": "",
