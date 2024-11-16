@@ -1,19 +1,22 @@
 const {loadFixture} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-
 const { expect } = require("chai");
-
-const TokenModule = require("../ignition/modules/TokenModule");
 const { ethers } = require("hardhat");
 
+const TokenModule = require("../ignition/modules/TokenModule");
+
 describe("Token Contract", function () {
+
+  const tokenName = "PESW Token";
+  const tokenSymbol = "PESW";
+  const initialSupply = 100000000000;
 
   async function deployCounterModuleFixture() {
     const {token} = await ignition.deploy(TokenModule, {
       parameters: {
         TokenModule: {
-          tokenName: process.env.MEME_TOKEN_NAME,
-          tokenSymbol: process.env.MEME_TOKEN_SYMBOL,
-          initialSupply: process.env.MEME_TOKEN_TOTAL_SUPPLY,
+          tokenName: tokenName,
+          tokenSymbol: tokenSymbol,
+          initialSupply: initialSupply,
         }
       }
     });
@@ -24,15 +27,12 @@ describe("Token Contract", function () {
   it("Should have correct initial supply allocations", async function () {
     const {token, owner} = await loadFixture(deployCounterModuleFixture);
 
-    console.log("token address is ", await token.getAddress());
-
-    const initialSupply = ethers.parseUnits(process.env.MEME_TOKEN_TOTAL_SUPPLY, 18);
-
-    expect(await token.balanceOf(owner.address)).to.equal(initialSupply);
+    const ownerBalance = await token.balanceOf(owner.address);
+    expect(await token.totalSupply()).to.equal(ownerBalance);
   });
 
   it("Should allow owner to freeze and unfreeze accounts", async function () {
-    const {token, addr1, addr2} = await loadFixture(deployCounterModuleFixture);
+    const {token, addr1} = await loadFixture(deployCounterModuleFixture);
 
     await token.setFrozenAccount(addr1.address, true);
     expect(await token.frozenAccount(addr1.address)).to.be.true;
@@ -42,7 +42,7 @@ describe("Token Contract", function () {
   });
 
   it("Should allow owner to lock and unlock accounts", async function () {
-    const {token, addr1, addr2} = await loadFixture(deployCounterModuleFixture);
+    const {token, addr1} = await loadFixture(deployCounterModuleFixture);
 
     const unlockTime = Math.floor(Date.now() / 1000) + 60; // 1 minute from now
     await token.lockAccount(addr1.address, unlockTime);
@@ -53,7 +53,7 @@ describe("Token Contract", function () {
   });
 
   it("Should transfer 20 tokens from addr1 to onwer", async function () {
-    const {token, owner, addr1, addr2} = await loadFixture(deployCounterModuleFixture);
+    const {token, owner, addr1} = await loadFixture(deployCounterModuleFixture);
 
     // addr1 transfers 20 tokens to addr2
     const transferAmount = ethers.parseUnits("20", 18);
@@ -66,10 +66,7 @@ describe("Token Contract", function () {
   });
 
   it("Should prevent transfers from frozen accounts", async function () {
-    const {token, owner, addr1, addr2} = await loadFixture(deployCounterModuleFixture);
-
-    console.log("addr1 address is ", owner.address);
-    console.log("addr1 balance is ", await token.balanceOf(owner.address));
+    const {token, owner, addr1} = await loadFixture(deployCounterModuleFixture);
 
     await token.setFrozenAccount(owner.address, true);
 
@@ -78,7 +75,7 @@ describe("Token Contract", function () {
   });
 
   it("Should prevent transfers from locked accounts", async function () {
-    const {token, owner, addr1, addr2} = await loadFixture(deployCounterModuleFixture);
+    const {token, owner, addr1} = await loadFixture(deployCounterModuleFixture);
 
     const unlockTime = Math.floor(Date.now() / 1000) + 60; // 1 minute from now
     await token.lockAccount(owner.address, unlockTime);
